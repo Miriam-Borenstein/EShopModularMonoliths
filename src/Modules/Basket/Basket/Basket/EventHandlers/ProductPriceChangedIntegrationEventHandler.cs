@@ -19,7 +19,7 @@ namespace Basket.Basket.EventHandlers
 
             if (!result.IsSuccess)
             {
-                logger.LogError("Error updating price in basket for product id : {ProductId}", context.Message.ProductId);
+                logger.LogError("Error updating price in basket for the product id : {ProductId}", context.Message.ProductId);
             }
             else
             {
