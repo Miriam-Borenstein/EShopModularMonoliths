@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Data.Interceptors;
+using Shared.Services;
 
 
 namespace Catalog
@@ -29,6 +30,19 @@ namespace Catalog
              );
 
             services.AddScoped<IDataSeeder, CatalogDataSeeder>();
+
+            services.AddScoped<IImageService>(provider =>
+            {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var connectionString = configuration.GetValue<string>("AzureBlobStorage:ConnectionString")
+                    ?? throw new InvalidOperationException("Azure Blob Storage connection string is not configured.");
+                var containerName = configuration.GetValue<string>("AzureBlobStorage:ContainerName")
+                    ?? throw new InvalidOperationException("Azure Blob Storage container name is not configured.");
+                var baseUrl = configuration.GetValue<string>("AzureBlobStorage:BaseUrl")
+                    ?? throw new InvalidOperationException("Azure Blob Storage base URL is not configured.");
+
+                return new AzureBlobStorageService(connectionString, containerName, baseUrl);
+            });
 
             return services;
         }

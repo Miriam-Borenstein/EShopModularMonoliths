@@ -3,7 +3,7 @@
 namespace Catalog.Products.Features.GetProducts
 {
     //public record GetProductsRequest(PaginationRequest PaginationRequest);
-    public record GetProductsResponse(PaginatedResult<ProductDto> Products);
+    public record GetProductsResponse(PaginatedResult<ProductQueryDto> Products);
     public class GetProductsEndpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)

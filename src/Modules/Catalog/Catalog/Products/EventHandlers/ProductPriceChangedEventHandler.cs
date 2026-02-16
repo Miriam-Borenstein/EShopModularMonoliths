@@ -18,7 +18,7 @@ namespace Catalog.Products.EventHandlers
                 Name = notification.Product.Name,
                 Category = notification.Product.Category,
                 Description = notification.Product.Description,
-                ImageFile = notification.Product.ImageFile,
+                ImageFile = notification.Product.ImageName,
                 Price = notification.Product.Price
             };
 

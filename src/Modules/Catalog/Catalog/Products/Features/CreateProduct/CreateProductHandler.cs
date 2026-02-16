@@ -1,6 +1,10 @@
-﻿namespace Catalog.Products.Features.CreateProduct
+﻿using Microsoft.Extensions.Configuration;
+using Shared.Services;
+using System.Threading.Tasks;
+
+namespace Catalog.Products.Features.CreateProduct
 {
-    public record CreateProductCommand(ProductDto Product)
+    public record CreateProductCommand(ProductDto Product, IFormFile ImageFile)
         : ICommand<CreateProductResult>;
     public record CreateProductResult(Guid Id);
 
@@ -10,34 +14,41 @@
         {
             RuleFor(x => x.Product.Name).NotEmpty().WithMessage("Name is requierd");
             RuleFor(x => x.Product.Category).NotEmpty().WithMessage("Category is requierd");
-            RuleFor(x => x.Product.ImageFile).NotEmpty().WithMessage("ImageFile is requierd");
+            RuleFor(x => x.ImageFile).NotEmpty().WithMessage("ImageFile is requierd");
             RuleFor(x => x.Product.Price).GreaterThan(0).WithMessage("Price must be greater than 0");
         }
     }
 
     internal class CreateProductHandler
-        (CatalogDbContext dbContext)
+        (CatalogDbContext dbContext,
+        IImageService imageService)
         : ICommandHandler<CreateProductCommand, CreateProductResult>
     {
         public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
         {
 
-           var product = CreateNewProduct(command.Product);
+            var fileName = $"{Guid.NewGuid()}_{command.ImageFile.FileName}";
+ 
+            await imageService.UploadImageAsync(fileName, command.ImageFile.OpenReadStream());
 
+            var product = CreateNewProduct(command.Product, fileName);
+       
             dbContext.Products.Add(product);
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return new CreateProductResult(product.Id);
         }
 
-        private Product CreateNewProduct(ProductDto productDto)
+        private Product CreateNewProduct(ProductDto productDto, string fileName)
         {
+
             var product = Product.Create(
                 Guid.NewGuid(),
                 productDto.Name,
                 productDto.Category,
                 productDto.Description,
-                productDto.ImageFile,
+                fileName,
+                //productDto.ImageFile,
                 productDto.Price
                 );
 

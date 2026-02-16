@@ -1,14 +1,17 @@
-﻿namespace Catalog.Products.Features.CreateProduct
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace Catalog.Products.Features.CreateProduct
 {
-    public record CreateProductRequest(ProductDto Product);
+    public record CreateProductRequest(ProductDto Product, IFormFile ImageFile);
     public record CreateProductResponse(Guid Id);
     public class CreateProductEndpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapPost("/products", async (CreateProductRequest request, ISender sender) =>
+            app.MapPost("/products", async ([FromForm] CreateProductRequest request, ISender sender) =>
                 {
-                    var command = request.Adapt<CreateProductCommand>();
+                    var command = new CreateProductCommand(request.Product, request.ImageFile);
+                    //request.Adapt<CreateProductCommand>();
 
                     var result = await sender.Send(command);
 
@@ -20,7 +23,8 @@
             .Produces<CreateProductResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Create Product")
-            .WithDescription("Create Product");
+            .WithDescription("Create Product")
+            .DisableAntiforgery();
 
                 
         }

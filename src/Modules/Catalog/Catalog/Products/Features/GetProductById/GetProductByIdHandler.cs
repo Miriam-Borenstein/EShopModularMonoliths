@@ -1,6 +1,11 @@
-﻿namespace Catalog.Products.Features.GetProductById;
+﻿using Shared.Services;
 
-internal class GetProductByIdHandler(CatalogDbContext dbContext)
+namespace Catalog.Products.Features.GetProductById;
+
+internal class GetProductByIdHandler(
+    CatalogDbContext dbContext,
+    IImageService imageService
+    )
     : IQueryHandler<GetProductByIdQuery, GetProductByIdResult>
 {
     public async Task<GetProductByIdResult> Handle(GetProductByIdQuery query, CancellationToken cancellationToken)
@@ -14,7 +19,16 @@ internal class GetProductByIdHandler(CatalogDbContext dbContext)
             throw new ProductNotFoundException(query.Id);
         }
 
-        var productDto = product.Adapt<ProductDto>();
+        var productDto = new ProductQueryDto(
+                product.Id,
+                product.Name,
+                product.Category,
+                product.Description,
+                product.Price,
+                imageService.GetImageUrl(product.ImageName)
+                );
+
+
 
         return new GetProductByIdResult(productDto);
     }
