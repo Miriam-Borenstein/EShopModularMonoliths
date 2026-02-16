@@ -12,7 +12,7 @@
 
             builder.Property(x => x.Description).HasMaxLength(200);
 
-            builder.Property(x => x.ImageFile).HasMaxLength(100);
+            builder.Property(x => x.ImageName).HasMaxLength(200);
 
             builder.Property(x => x.Price).IsRequired();
 

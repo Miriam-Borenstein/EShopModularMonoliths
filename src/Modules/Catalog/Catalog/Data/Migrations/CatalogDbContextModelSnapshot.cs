@@ -45,9 +45,9 @@ namespace Catalog.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("ImageFile")
+                    b.Property<string>("ImageName")
                         .IsRequired()
-                        .HasMaxLength(100)
+                        .HasMaxLength(200)
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("LastModified")

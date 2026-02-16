@@ -1,6 +1,9 @@
-﻿namespace Catalog.Products.Features.UpdateProduct
+﻿using Shared.Services;
+using System.Threading.Tasks;
+
+namespace Catalog.Products.Features.UpdateProduct
 {
-    public record UpdateProductCommand(ProductDto Product)
+    public record UpdateProductCommand(ProductDto Product, IFormFile? ImageFile)
         : ICommand<UpdateProductResult>;
 
     public record UpdateProductResult(bool IsSuccess);
@@ -15,7 +18,9 @@
         }
     }
 
-    internal class UptadeProductHandler(CatalogDbContext dbContext)
+    internal class UptadeProductHandler(
+        CatalogDbContext dbContext,
+        IImageService imageService)
         : ICommandHandler<UpdateProductCommand, UpdateProductResult>
     {
         public async Task<UpdateProductResult> Handle(UpdateProductCommand command, CancellationToken cancellationToken)
@@ -24,23 +29,43 @@
 
             if (product is null) {
 
-                throw new ProductNotFoundException(command.Product.Id);
+                throw new ProductNotFoundException(command.Product.Id.Value);
             }
 
-            UpdateProductWithNewValues(product, command.Product);
+            if(command.ImageFile is null)
+            {
+                UpdateProductWithNewValues(product, command.Product, product.ImageName);
+            }
+
+
+            else
+            {
+                var newImageName = $"{Guid.NewGuid()}_{command.ImageFile.FileName}";
+
+                await imageService.DeleteImageAsync(product.ImageName);
+
+                await imageService.UploadImageAsync(newImageName, command.ImageFile.OpenReadStream());
+
+                UpdateProductWithNewValues(product, command.Product, newImageName);
+
+            }
+
+
             dbContext.Products.Update(product);
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return new UpdateProductResult(true);
         }
 
-        private void UpdateProductWithNewValues(Product product, ProductDto productDto)
+        private void UpdateProductWithNewValues(Product product, ProductDto productDto, string? imageName)
         {
+
             product.Update(
                 productDto.Name,
                 productDto.Category,
                 productDto.Description,
-                productDto.ImageFile,
+                //productDto.ImageFile,
+                imageName,
                 productDto.Price
                 );
         }

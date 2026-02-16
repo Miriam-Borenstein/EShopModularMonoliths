@@ -1,10 +1,22 @@
-﻿namespace Catalog.Contracts.Products.Dtos;
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Catalog.Contracts.Products.Dtos;
 
 public record ProductDto(
-    Guid Id,
+    Guid? Id,
     string Name,
     List<string> Category,
     string Description,
-    string ImageFile,
+    //string ImageFile,
     decimal Price
     );
+
+public record ProductQueryDto(
+    Guid? Id,
+    string Name,
+    List<string> Category,
+    string Description,
+    decimal Price,
+    string? ImageUrl
+    );
+

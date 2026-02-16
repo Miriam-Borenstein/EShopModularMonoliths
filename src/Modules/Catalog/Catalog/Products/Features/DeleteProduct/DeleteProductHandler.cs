@@ -1,4 +1,6 @@
-﻿namespace Catalog.Products.Features.DeleteProduct
+﻿using Shared.Services;
+
+namespace Catalog.Products.Features.DeleteProduct
 {
     public record DeleteProductCommand(Guid ProductId)
         : ICommand<DeleteProductResult>;
@@ -12,7 +14,9 @@
             RuleFor(x => x.ProductId).NotEmpty().WithMessage("Id is requierd");
         }
     }
-    internal class DeleteProductHandler(CatalogDbContext dbContext)
+    internal class DeleteProductHandler(
+        CatalogDbContext dbContext,
+        IImageService imageService)
         : ICommandHandler<DeleteProductCommand, DeleteProductResult>
     {
         public async Task<DeleteProductResult> Handle(DeleteProductCommand command, CancellationToken cancellationToken)
@@ -25,8 +29,15 @@
                 throw new ProductNotFoundException(command.ProductId);
             }
 
+            if (!string.IsNullOrEmpty(product.ImageName))
+            {
+                await imageService.DeleteImageAsync(product.ImageName);
+            }
+
             dbContext.Products.Remove(product);
             await dbContext.SaveChangesAsync(cancellationToken);
+
+
 
             return new DeleteProductResult(true);
         }
