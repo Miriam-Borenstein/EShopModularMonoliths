@@ -36,10 +36,10 @@ namespace Catalog
                 var configuration = provider.GetRequiredService<IConfiguration>();
                 var containerName = configuration.GetValue<string>("AzureBlobStorage:ContainerName")
                     ?? throw new InvalidOperationException("Azure Blob Storage container name is not configured.");
-                var baseUrl = configuration.GetValue<string>("AzureBlobStorage:ServiceUri")
+                var serviceUri = configuration.GetValue<string>("AzureBlobStorage:ServiceUri")
                     ?? throw new InvalidOperationException("Azure Blob Storage URL is not configured.");
 
-                return new AzureBlobStorageService(containerName, baseUrl);
+                return new AzureBlobStorageService(containerName, serviceUri);
             });
 
             return services;
