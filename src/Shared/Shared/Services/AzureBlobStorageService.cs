@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Identity;
 
 namespace Shared.Services
 {
@@ -7,11 +8,14 @@ namespace Shared.Services
         private readonly BlobContainerClient _containerClient;
         private readonly string _baseUrl;
 
-        public AzureBlobStorageService(string connectionString, string containerName, string baseUrl)
-        {
-            var blobServiceClient = new BlobServiceClient(connectionString);
+        public AzureBlobStorageService(string containerName, string serviceUri)
+        {            var blobServiceClient = new BlobServiceClient(new Uri(serviceUri), new DefaultAzureCredential(
+                new DefaultAzureCredentialOptions
+                {
+                    ExcludeVisualStudioCredential = true,
+                }));
             _containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            _baseUrl = baseUrl;
+            _baseUrl = $"{serviceUri}/{containerName}";
         }
 
         public async Task<string> UploadImageAsync(string fileName, Stream fileStream)
